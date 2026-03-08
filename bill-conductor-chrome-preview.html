@@ -1,0 +1,2014 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bill Conductor — Chrome Design System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bc-primary: #228B22;
+      --bc-primary-hover: #1a6f1a;
+      --bc-danger: #ef4444;
+
+      /* Charcoal system — tone-on-tone warmth */
+      --background: #1e1e1e;
+      --foreground: #dcdcdc;
+      --card-bg: #262626;
+      --card-bg-elevated: #2c2c2c;
+      --border: #333333;
+      --border-light: #3a3a3a;
+      --muted: #808080;
+
+      /* Gold chrome palette */
+      --chrome-gold: #C9A84C;
+      --chrome-gold-light: #EDD98C;
+      --chrome-gold-bright: #F5E8A8;
+      --chrome-gold-dark: #8B7332;
+      --chrome-gold-deep: #6B5625;
+    }
+
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      line-height: 1.5;
+    }
+
+    .font-display { font-family: 'Space Grotesk', 'Inter', sans-serif; }
+    .tabular-nums { font-variant-numeric: tabular-nums; }
+
+    /* Material Card — shadow separation, no borders */
+    .paper-card {
+      background: var(--card-bg);
+      border: none;
+      border-radius: 12px;
+      position: relative;
+      box-shadow:
+        0 1px 2px rgba(0,0,0,0.4),
+        0 4px 8px rgba(0,0,0,0.2),
+        0 8px 20px rgba(0,0,0,0.12);
+      transition: box-shadow 0.4s ease, transform 0.4s ease;
+    }
+    .paper-card:hover {
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.4),
+        0 8px 16px rgba(0,0,0,0.25),
+        0 16px 36px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+    .paper-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 24px; right: 24px;
+      height: 1px;
+      background: linear-gradient(90deg,
+        transparent 0%,
+        var(--chrome-gold-dark) 20%,
+        var(--chrome-gold-light) 50%,
+        var(--chrome-gold-dark) 80%,
+        transparent 100%
+      );
+      opacity: 0.35;
+      border-radius: 0 0 2px 2px;
+      z-index: 2;
+    }
+
+    /* Chrome CTA Card (static gradient) */
+    .chrome-card {
+      position: relative;
+      border-radius: 12px;
+      padding: 1px;
+      background: linear-gradient(135deg, var(--chrome-gold-deep) 0%, var(--chrome-gold-dark) 20%, var(--chrome-gold) 40%, var(--chrome-gold-light) 60%, var(--chrome-gold-dark) 80%, var(--chrome-gold-deep) 100%);
+      box-shadow:
+        0 1px 2px rgba(0,0,0,0.4),
+        0 4px 8px rgba(0,0,0,0.2),
+        0 8px 20px rgba(0,0,0,0.12);
+      transition: box-shadow 0.4s ease, transform 0.4s ease;
+    }
+    .chrome-card:hover {
+      box-shadow:
+        0 2px 4px rgba(0,0,0,0.4),
+        0 8px 16px rgba(0,0,0,0.25),
+        0 16px 36px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+    .chrome-card-inner {
+      background: var(--card-bg);
+      border-radius: 11px;
+      overflow: hidden;
+    }
+    .chrome-card .paper-card::before { display: none; }
+
+    /* Simple CTA Button */
+    .btn-chrome {
+      position: relative;
+      padding: 5px 12px;
+      border-radius: 8px;
+      border: none;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      color: white;
+      background: var(--bc-primary);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 2px 6px rgba(34,139,34,0.25);
+    }
+    .btn-chrome:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(34,139,34,0.35);
+    }
+
+    /* Layout */
+    .app { display: flex; height: 100vh; overflow: hidden; }
+
+    .sidebar {
+      width: 260px;
+      background: var(--card-bg);
+      border-right: none;
+      box-shadow: 4px 0 20px rgba(0,0,0,0.3);
+      display: flex; flex-direction: column; flex-shrink: 0;
+      z-index: 2;
+    }
+    .sidebar-brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 20px;
+    }
+    .sidebar-logo {
+      width: 32px; height: 32px;
+      background: var(--bc-primary);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-weight: 700; font-size: 13px;
+      box-shadow: 0 2px 6px rgba(34,139,34,0.3);
+    }
+    .sidebar-title { font-weight: 600; font-size: 17px; font-family: 'Space Grotesk', 'Inter', sans-serif; }
+    .sidebar-nav { flex: 1; padding: 12px; overflow-y: auto; }
+    .nav-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 12px; border-radius: 10px;
+      font-size: 14px; font-weight: 500;
+      color: var(--muted); cursor: pointer;
+      text-decoration: none; transition: all 0.2s;
+    }
+    .nav-item:hover { color: var(--foreground); background: rgba(255,255,255,0.04); }
+    .nav-item.active {
+      background: var(--bc-primary);
+      color: white;
+      box-shadow: 0 2px 8px rgba(34,139,34,0.25);
+    }
+    .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .sidebar-footer {
+      padding: 12px 16px;
+      border-top: 1px solid var(--border);
+      display: flex; flex-direction: column; gap: 10px;
+      flex-shrink: 0;
+    }
+    .sidebar-footer-label {
+      font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .sidebar-footer-email {
+      display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 500; color: var(--bc-primary); text-decoration: none;
+    }
+    .sidebar-footer-email svg { width: 16px; height: 16px; flex-shrink: 0; }
+    .sidebar-footer-signout {
+      display: flex; align-items: center; gap: 8px;
+      padding: 0; border: none; background: none;
+      font-size: 13px; font-weight: 500; color: var(--muted);
+      cursor: pointer; transition: all 0.2s;
+      text-decoration: none;
+    }
+    .sidebar-footer-signout:hover { color: var(--foreground); }
+    .sidebar-footer-signout svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      background: var(--background);
+    }
+
+    .header {
+      height: 64px;
+      border-bottom: none;
+      background: var(--card-bg);
+      padding: 0 24px;
+      display: flex; align-items: center; justify-content: space-between;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+      position: relative;
+      z-index: 1;
+    }
+    .header h1 { font-size: 18px; font-weight: 600; font-family: 'Space Grotesk', 'Inter', sans-serif; text-align: left; }
+    .header-sub { font-size: 13px; color: var(--muted); text-align: left; }
+    .header-actions { display: flex; gap: 12px; align-items: center; }
+
+    .icon-btn {
+      width: 36px; height: 36px; border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      background: none; border: none; color: var(--muted);
+      cursor: pointer; transition: all 0.2s; position: relative;
+    }
+    .icon-btn:hover { background: rgba(255,255,255,0.04); color: var(--foreground); }
+    .icon-btn svg { width: 18px; height: 18px; }
+    .notif-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bc-danger); position: absolute; top: 6px; right: 6px; }
+
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 14px; border-radius: 8px;
+      background: var(--bc-primary); color: white;
+      font-size: 13px; font-weight: 500;
+      border: none; cursor: pointer; transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--bc-primary-hover); }
+
+    .content { padding: 24px; max-width: 640px; margin: 0 auto; text-align: left; }
+
+    /* Search bar styling */
+    .search-box {
+      display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+      border: none; border-radius: 12px; background: var(--card-bg);
+      min-width: 200px; box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    .search-box input {
+      flex: 1; border: none; background: transparent; outline: none;
+      font-size: 13px; color: var(--foreground); padding: 0;
+    }
+    .search-box svg { width: 16px; height: 16px; color: var(--muted); flex-shrink: 0; }
+
+    /* Select/dropdown styling */
+    select {
+      appearance: none;
+      padding: 4px 24px 4px 8px;
+      font-size: 11px;
+      font-weight: 500;
+      background: var(--card-bg);
+      border: none;
+      border-radius: 10px;
+      color: var(--foreground);
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+    }
+
+    /* View switcher */
+    .view-switcher {
+      position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+      display: flex; gap: 4px; background: var(--foreground); padding: 6px;
+      border-radius: 12px; z-index: 100; box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+    .view-btn {
+      padding: 8px 16px; border-radius: 8px;
+      font-size: 12px; font-weight: 600;
+      color: #94a3b8; cursor: pointer;
+      border: none; background: none; transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .view-btn:hover { color: white; }
+    .view-btn.active { background: var(--bc-primary); color: white; }
+
+    /* Scrollbar */
+    .main::-webkit-scrollbar { width: 6px; }
+    .main::-webkit-scrollbar-track { background: transparent; }
+    .main::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    .main::-webkit-scrollbar-thumb:hover { background: var(--border-light); }
+
+    /* Settings specific */
+    .settings-button {
+      background: var(--card-bg);
+      border: none;
+      border-radius: 12px;
+      padding: 10px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--foreground);
+      box-shadow: 0 1px 2px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2), 0 8px 20px rgba(0,0,0,0.12);
+    }
+    .settings-button:hover {
+      box-shadow: 0 2px 4px rgba(0,0,0,0.4), 0 8px 16px rgba(0,0,0,0.25), 0 16px 36px rgba(0,0,0,0.15);
+      transform: translateY(-1px);
+    }
+    .settings-button-icon {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      color: var(--muted);
+      border: none;
+    }
+    .settings-button-content { flex: 1; min-width: 0; text-align: left; }
+    .settings-button-title {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 4px;
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      text-align: left;
+    }
+    .settings-button-desc {
+      font-size: 12px;
+      color: var(--muted);
+      text-align: left;
+    }
+    .settings-button-chevron {
+      width: 16px; height: 16px;
+      flex-shrink: 0;
+      color: var(--muted);
+    }
+
+    /* Modal */
+    #reminder-modal {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #reminder-modal > div {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 450px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.3), 0 16px 36px rgba(0,0,0,0.15);
+    }
+
+    @media (max-width: 768px) {
+      .sidebar { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="view-switcher">
+  <button class="view-btn active" onclick="showView('home')">Home</button>
+  <button class="view-btn" onclick="showView('billing')">Billing</button>
+  <button class="view-btn" onclick="showView('receipts')">Receipts</button>
+  <button class="view-btn" onclick="showView('settings')">Settings</button>
+</div>
+
+<!-- HOME VIEW -->
+<div id="view-home" class="app">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">A</div>
+      <span class="sidebar-title" style="cursor:default">Acme Studio</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item active" onclick="showView('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients & Leads
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Proposals
+      </a>
+      <a class="nav-item" onclick="showView('billing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Billing
+      </a>
+      <a class="nav-item" onclick="showView('receipts')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></svg>
+        Receipts
+      </a>
+      <a class="nav-item" onclick="showView('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-label">Forward to</div>
+      <a class="sidebar-footer-email" href="mailto:acme-studio@billconductor.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        acme-studio@billconductor.com
+      </a>
+      <button class="sidebar-footer-signout" onclick="showView('login')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="header">
+      <div>
+        <h1>Home</h1>
+        <div class="header-sub">Mar 2026</div>
+      </div>
+      <div class="header-actions">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search invoices, receipts…" />
+        </div>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot"></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- NEEDS ATTENTION — chrome card -->
+      <div style="margin-bottom:12px">
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px">
+          <span style="font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">Needs Attention</span>
+          <span style="background:#dc2626; color:white; border-radius:50%; width:16px; height:16px; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700">4</span>
+        </div>
+
+        <div class="chrome-card" style="margin-bottom:8px">
+          <div class="chrome-card-inner" style="padding:4px">
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.15s; margin-bottom:2px" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+              <div style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div style="flex:1; min-width:0">
+                <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap">
+                  <span style="font-size:13px; font-weight:500">INV-023 · Website Redesign Phase 2</span>
+                  <span style="font-size:13px; font-weight:600; color:#ef4444">$2,500.00</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+                  <span style="font-size:10px; color:var(--muted); font-weight:500">Riverside Architecture</span>
+                  <span style="font-size:10px; color:var(--muted)">·</span>
+                  <span style="font-size:10px; color:#ef4444; font-weight:500">18 days overdue</span>
+                </div>
+              </div>
+              <button class="btn-chrome" style="flex-shrink:0" onclick="event.stopPropagation(); document.getElementById('reminder-modal').style.display='flex'">Nudge</button>
+              <svg style="flex-shrink:0; color:var(--muted)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.15s; margin-bottom:2px" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+              <div style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div style="flex:1; min-width:0">
+                <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap">
+                  <span style="font-size:13px; font-weight:500">INV-031 · Brand Identity Package</span>
+                  <span style="font-size:13px; font-weight:600">$1,200.00</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+                  <span style="font-size:10px; color:var(--muted); font-weight:500">Bloom Creative Studio</span>
+                  <span style="font-size:10px; color:var(--muted)">·</span>
+                  <span style="font-size:10px; color:var(--muted); font-weight:500">Due in 7 days</span>
+                </div>
+              </div>
+              <button class="btn-chrome" style="flex-shrink:0">Nudge</button>
+              <svg style="flex-shrink:0; color:var(--muted)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.15s; margin-bottom:2px" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+              <div style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div style="flex:1; min-width:0">
+                <div style="display:flex; align-items:baseline; gap:6px; flex-wrap:wrap">
+                  <span style="font-size:13px; font-weight:500">INV-042 · UI/UX Consultation</span>
+                  <span style="font-size:13px; font-weight:600">$550.00</span>
+                </div>
+                <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+                  <span style="font-size:10px; color:var(--muted); font-weight:500">Neon Digital Agency</span>
+                  <span style="font-size:10px; color:var(--muted)">·</span>
+                  <span style="font-size:10px; color:var(--muted); font-weight:500">Due in 15 days</span>
+                </div>
+              </div>
+              <button class="btn-chrome" style="flex-shrink:0">Nudge</button>
+              <svg style="flex-shrink:0; color:var(--muted)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+
+            <div style="display:flex; align-items:center; gap:10px; padding:10px 12px; border-radius:10px; cursor:pointer; transition:background 0.15s" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
+              <div style="width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div style="flex:1; min-width:0">
+                <span style="font-size:13px; font-weight:500">5 receipts need review</span>
+                <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+                  <span style="font-size:10px; color:var(--muted)">Home Depot, Adobe, +3 more</span>
+                  <span style="font-size:10px; color:var(--muted)">·</span>
+                  <span style="font-size:10px; color:var(--muted); font-weight:500">Oldest: 3 days ago</span>
+                </div>
+              </div>
+              <button class="btn-chrome" style="flex-shrink:0" onclick="showView('review')">Review</button>
+              <svg style="flex-shrink:0; color:var(--muted)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OVERVIEW CHART — paper card with chrome accent -->
+      <div class="paper-card" style="overflow:hidden; margin-bottom:10px">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:10px 14px 4px">
+          <span style="font-size:10px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; font-weight:500">Overview</span>
+          <div style="display:flex; gap:10px; font-size:9px; color:var(--muted)">
+            <span style="display:flex; align-items:center; gap:3px"><span style="width:10px; height:2px; border-radius:1px; background:#16a34a; display:inline-block"></span>Income</span>
+            <span style="display:flex; align-items:center; gap:3px"><span style="width:10px; height:2px; border-radius:1px; background:#ef4444; display:inline-block"></span>Expenses</span>
+            <span style="display:flex; align-items:center; gap:3px"><span style="width:10px; height:2px; border-radius:1px; background:#3b82f6; display:inline-block"></span>Net</span>
+          </div>
+        </div>
+        <svg viewBox="0 0 640 140" style="width:100%; height:140px" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="netGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+              <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.04" />
+              <stop offset="100%" style="stop-color:#3b82f6;stop-opacity:0" />
+            </linearGradient>
+          </defs>
+          <line x1="28" y1="108" x2="612" y2="108" stroke="var(--border)" stroke-width="1"/>
+          <path d="M 28 80 L 93 68 L 158 84 L 223 48 L 288 56 L 353 72 L 418 64 L 483 80 L 548 48 L 548 108 L 28 108 Z" fill="url(#netGradient)"/>
+          <polyline points="28,36 93,28 158,40 223,16 288,24 353,32 418,24 483,36 548,24" fill="none" stroke="#16a34a" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+          <polyline points="28,64 93,64 158,64 223,56 288,60 353,60 418,64 483,52 548,68" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+          <polyline points="28,80 93,68 158,84 223,48 288,56 353,72 418,64 483,80 548,48" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="548,24 572,20 596,16 612,12" fill="none" stroke="#16a34a" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.35" stroke-linecap="round"/>
+          <polyline points="548,68 572,64 596,64 612,64" fill="none" stroke="#ef4444" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.35" stroke-linecap="round"/>
+          <polyline points="548,48 572,56 596,52 612,48" fill="none" stroke="#3b82f6" stroke-width="2.5" stroke-dasharray="4 3" opacity="0.35" stroke-linecap="round"/>
+          <circle cx="548" cy="24" r="2.5" fill="#16a34a"/>
+          <circle cx="548" cy="68" r="2.5" fill="#ef4444"/>
+          <circle cx="548" cy="48" r="3.5" fill="#3b82f6"/>
+          <circle cx="548" cy="48" r="6" fill="#3b82f6" opacity="0.15"/>
+          <text x="28" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">JUL</text>
+          <text x="93" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">AUG</text>
+          <text x="158" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">SEP</text>
+          <text x="223" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">OCT</text>
+          <text x="288" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">NOV</text>
+          <text x="353" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">DEC</text>
+          <text x="418" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">JAN</text>
+          <text x="483" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.6">FEB</text>
+          <text x="548" y="132" text-anchor="middle" font-size="8" font-weight="600" fill="#3b82f6">MAR</text>
+          <text x="580" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.5">APR</text>
+          <text x="612" y="132" text-anchor="middle" font-size="8" fill="#64748b" opacity="0.5">JUN</text>
+        </svg>
+      </div>
+
+      <!-- Period picker BELOW overview chart -->
+      <div style="position:relative; display:inline-block; margin-bottom:8px">
+        <select style="appearance:none; padding:4px 24px 4px 8px; font-size:11px; font-weight:500; background:var(--card-bg); border:none; border-radius:10px; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2); color:var(--foreground)">
+          <option>This Month: MAR</option>
+          <option>Last Month: FEB</option>
+          <option>This Quarter: Q1 2026</option>
+          <option>Last Quarter: Q4 2025</option>
+          <option>Year to Date</option>
+          <option>Last 6 Months</option>
+          <option>Last 12 Months</option>
+          <option>All Time</option>
+        </select>
+        <svg style="position:absolute; right:6px; top:50%; transform:translateY(-50%); pointer-events:none; color:var(--muted)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+      </div>
+
+      <!-- SUMMARY STRIP — paper cards -->
+      <div style="display:flex; gap:8px; margin-bottom:10px">
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="display:flex; align-items:center; gap:4px; font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">
+            <span style="width:6px; height:6px; border-radius:50%; background:#16a34a; display:inline-block"></span>Income
+          </span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#16a34a; margin:0">$9,450</p>
+        </div>
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="display:flex; align-items:center; gap:4px; font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">
+            <span style="width:6px; height:6px; border-radius:50%; background:#ef4444; display:inline-block"></span>Expenses
+          </span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#ef4444; margin:0">-$4,037</p>
+        </div>
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="display:flex; align-items:center; gap:4px; font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">
+            <span style="width:6px; height:6px; border-radius:50%; background:#3b82f6; display:inline-block"></span>Net
+          </span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#3b82f6; margin:0">$5,413</p>
+          <span style="display:flex; align-items:center; gap:2px; font-size:9px; font-weight:500; color:#16a34a">
+            <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 6 13.46 15.89 8 10.5 1 17.5"/><polyline points="23 6 23 12 17 12"/></svg>
+            +121%
+          </span>
+        </div>
+      </div>
+
+      <!-- AVG DAYS TO PAY — paper card -->
+      <div class="paper-card" style="padding:12px 14px; margin-bottom:10px">
+        <div style="font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px">Avg Days to Pay</div>
+        <div style="display:flex; flex-direction:column; gap:10px">
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="width:3px; height:32px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+            <div style="flex:1; min-width:0">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:12px; font-weight:500; color:var(--foreground)">Riverside Architecture</span>
+                <span style="font-size:9px; color:var(--muted)">(8 inv)</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; margin-top:2px">
+                <span class="font-display tabular-nums" style="font-size:10px; font-weight:600">22d</span>
+                <span class="tabular-nums" style="font-size:9px; color:var(--muted)">±5d</span>
+                <span style="font-size:9px; font-weight:500; color:var(--muted)">↙ Slowing down</span>
+              </div>
+            </div>
+            <div style="text-align:right; flex-shrink:0">
+              <span class="font-display tabular-nums" style="font-size:18px; font-weight:700; color:var(--foreground)">22</span>
+              <span style="font-size:9px; color:var(--muted); display:block">days</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="width:3px; height:32px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+            <div style="flex:1; min-width:0">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:12px; font-weight:500; color:var(--foreground)">Bloom Creative Studio</span>
+                <span style="font-size:9px; color:var(--muted)">(6 inv)</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; margin-top:2px">
+                <span class="font-display tabular-nums" style="font-size:10px; font-weight:600">11d</span>
+                <span class="tabular-nums" style="font-size:9px; color:var(--muted)">±3d</span>
+                <span style="font-size:9px; font-weight:500; color:var(--muted)">↗ Getting faster</span>
+              </div>
+            </div>
+            <div style="text-align:right; flex-shrink:0">
+              <span class="font-display tabular-nums" style="font-size:18px; font-weight:700; color:var(--foreground)">11</span>
+              <span style="font-size:9px; color:var(--muted); display:block">days</span>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:10px">
+            <div style="width:3px; height:32px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+            <div style="flex:1; min-width:0">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:12px; font-weight:500; color:var(--foreground)">Neon Digital Agency</span>
+                <span style="font-size:9px; color:var(--muted)">(4 inv)</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:6px; margin-top:2px">
+                <span class="font-display tabular-nums" style="font-size:10px; font-weight:600">16d</span>
+                <span class="tabular-nums" style="font-size:9px; color:var(--muted)">±8d</span>
+                <span style="font-size:9px; font-weight:500; color:var(--muted)">→ Stable</span>
+              </div>
+            </div>
+            <div style="text-align:right; flex-shrink:0">
+              <span class="font-display tabular-nums" style="font-size:18px; font-weight:700; color:var(--foreground)">16</span>
+              <span style="font-size:9px; color:var(--muted); display:block">days</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- INCOME — paper card -->
+      <div class="paper-card" style="padding:12px 14px; margin-bottom:10px">
+        <div style="font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px">Income</div>
+        <div style="display:flex; flex-direction:column; gap:6px">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span style="font-size:13px; color:var(--muted)">↗</span>
+              <span style="font-size:12px">Client billing — paid</span>
+              <span style="font-size:9px; color:var(--muted)">(4)</span>
+            </div>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:500">$7,450.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span style="font-size:13px; color:var(--muted)">↗</span>
+              <span style="font-size:12px">Retainer income</span>
+              <span style="font-size:9px; color:var(--muted)">(1)</span>
+            </div>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:500">$2,000.00</span>
+          </div>
+          <div style="border-top:1px solid var(--border); padding-top:6px; display:flex; justify-content:space-between; align-items:center">
+            <span style="font-size:12px; font-weight:600">Total</span>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:700; color:#16a34a">$9,450.00</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- EXPENSES — paper card -->
+      <div class="paper-card" style="padding:12px 14px; margin-bottom:10px">
+        <div style="font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px">Expenses</div>
+        <div style="display:flex; flex-direction:column; gap:6px">
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span style="font-size:13px; color:var(--muted)">↙</span>
+              <span style="font-size:12px">Materials & supplies</span>
+              <span style="font-size:9px; color:var(--muted)">(3)</span>
+            </div>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:500">-$1,842.37</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span style="font-size:13px; color:var(--muted)">↙</span>
+              <span style="font-size:12px">Subcontractors</span>
+              <span style="font-size:9px; color:var(--muted)">(1)</span>
+            </div>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:500">-$1,750.00</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span style="font-size:13px; color:var(--muted)">↙</span>
+              <span style="font-size:12px">Software & subscriptions</span>
+              <span style="font-size:9px; color:var(--muted)">(3)</span>
+            </div>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:500">-$159.97</span>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; align-items:center; gap:6px">
+              <span style="font-size:13px; color:var(--muted)">↙</span>
+              <span style="font-size:12px">Office & utilities</span>
+              <span style="font-size:9px; color:var(--muted)">(2)</span>
+            </div>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:500">-$285.00</span>
+          </div>
+          <div style="border-top:1px solid var(--border); padding-top:6px; display:flex; justify-content:space-between; align-items:center">
+            <span style="font-size:12px; font-weight:600">Total</span>
+            <span class="font-display tabular-nums" style="font-size:12px; font-weight:700; color:#ef4444">-$4,037.34</span>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center; padding:4px 0">
+        <p style="font-size:9px; color:var(--muted); margin:0" class="tabular-nums">57.3% profit margin · MAR 2026</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SEND REMINDER MODAL (shown on load as demo) -->
+<div id="reminder-modal">
+  <div>
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px">
+      <div>
+        <h2 style="font-size:18px; font-weight:700; font-family:'Space Grotesk','Inter',sans-serif">Send Reminder</h2>
+        <p style="font-size:12px; color:var(--muted); margin-top:2px">to Sarah · sarah@riversidearch.com</p>
+      </div>
+      <button onclick="document.getElementById('reminder-modal').style.display='none'" style="background:none; border:none; color:var(--muted); cursor:pointer; padding:4px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="display:block; font-size:10px; font-weight:600; color:var(--bc-primary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px">Subject</label>
+      <div style="padding:10px 12px; border-radius:10px; background:var(--background); font-size:13px; color:var(--foreground); box-shadow:inset 0 1px 2px rgba(0,0,0,0.2)">Quick reminder — Invoice #000023</div>
+    </div>
+
+    <div style="margin-bottom:14px">
+      <label style="display:block; font-size:10px; font-weight:600; color:var(--bc-primary); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px">Message</label>
+      <div style="padding:12px; border-radius:10px; background:var(--background); font-size:13px; color:var(--foreground); line-height:1.6; max-height:150px; overflow-y:auto; box-shadow:inset 0 1px 2px rgba(0,0,0,0.2)">
+        <p style="margin:0 0 10px">Hey Sarah,</p>
+        <p style="margin:0 0 10px">Hope you're doing well! Just wanted to circle back on invoice #000023 for Website Redesign Phase 2 — it looks like it's still outstanding at $2,500.00.</p>
+        <p style="margin:0">No worries at all if it slipped through the cracks — just wanted to make sure it's on your radar. Let me know if you have any questions or if there's anything I can help with!</p>
+      </div>
+      <div style="display:flex; align-items:center; gap:4px; margin-top:4px; float:right">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+        <span style="font-size:9px; color:var(--muted)">edit</span>
+      </div>
+    </div>
+
+    <div style="clear:both; padding:10px 12px; border-radius:10px; background:rgba(201,168,76,0.08); border-left:3px solid var(--chrome-gold); margin-bottom:16px">
+      <p style="font-size:11px; color:var(--muted); line-height:1.5; margin:0">During onboarding, you can provide example emails so we match your tone perfectly.</p>
+    </div>
+
+    <div style="display:flex; gap:10px; justify-content:flex-end">
+      <button onclick="document.getElementById('reminder-modal').style.display='none'" style="padding:10px 20px; border-radius:10px; background:transparent; border:none; color:var(--foreground); font-size:13px; font-weight:500; cursor:pointer">Cancel</button>
+      <button onclick="document.getElementById('reminder-modal').style.display='none'" style="padding:10px 20px; border-radius:10px; background:var(--bc-primary); border:none; color:white; font-size:13px; font-weight:600; cursor:pointer; box-shadow:0 2px 6px rgba(34,139,34,0.25)">Send to Sarah</button>
+    </div>
+  </div>
+</div>
+
+<!-- BILLING VIEW -->
+<div id="view-billing" class="app" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">A</div>
+      <span class="sidebar-title" style="cursor:default">Acme Studio</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" onclick="showView('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients & Leads
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Proposals
+      </a>
+      <a class="nav-item active" onclick="showView('billing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Billing
+      </a>
+      <a class="nav-item" onclick="showView('receipts')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></svg>
+        Receipts
+      </a>
+      <a class="nav-item" onclick="showView('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-label">Forward to</div>
+      <a class="sidebar-footer-email" href="mailto:acme-studio@billconductor.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        acme-studio@billconductor.com
+      </a>
+      <button class="sidebar-footer-signout" onclick="showView('login')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="header">
+      <div>
+        <h1>Billing</h1>
+        <div class="header-sub">9 entries</div>
+      </div>
+      <div class="header-actions">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search invoices, receipts…" />
+        </div>
+        <button class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          New Entry
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot"></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Smart New Entry card with voice-to-text -->
+      <div class="paper-card" style="padding:12px 14px; margin-bottom:8px">
+        <div style="font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px">New Entry</div>
+        <div style="display:flex; gap:10px; align-items:center">
+          <div style="flex:1; display:flex; align-items:center; gap:8px; padding:10px 12px; border-radius:10px; background:var(--background); box-shadow:inset 0 1px 2px rgba(0,0,0,0.2); cursor:text">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <span style="font-size:12px; color:var(--muted)">Describe invoice or paste details…</span>
+          </div>
+          <button style="width:40px; height:40px; border-radius:50%; background:rgba(255,255,255,0.06); border:none; display:flex; align-items:center; justify-content:center; cursor:pointer; flex-shrink:0; transition:all 0.15s" title="Voice to text">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--bc-primary)" stroke-width="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+        </div>
+        <p style="font-size:9px; color:var(--muted); margin-top:6px">Type, paste, or use voice — we'll auto-populate the fields</p>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:8px">
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">In</span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#16a34a; margin:0">$18,450</p>
+        </div>
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">Out</span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#ef4444; margin:0">-$1,750</p>
+        </div>
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">Net</span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#3b82f6; margin:0">$16,700</p>
+        </div>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px; overflow-x:auto">
+        <div style="position:relative; flex-shrink:0">
+          <select style="appearance:none; padding:4px 22px 4px 8px; font-size:11px; font-weight:500; background:var(--card-bg); border:none; border-radius:8px; color:var(--foreground); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2)">
+            <option>All · Newest</option>
+            <option>All · Oldest</option>
+            <option>All · Invoice #</option>
+            <option>All · Amount ↓</option>
+            <option>All · Amount ↑</option>
+            <option>All · Priority</option>
+            <option>Deposits Only</option>
+            <option>Payments Only</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); pointer-events:none"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div style="position:relative; flex-shrink:0">
+          <select style="appearance:none; padding:4px 22px 4px 8px; font-size:11px; font-weight:500; background:var(--card-bg); border:none; border-radius:8px; color:var(--foreground); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2)">
+            <option>Status</option>
+            <option>Overdue</option>
+            <option>Sent</option>
+            <option>Paid</option>
+            <option>Draft</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); pointer-events:none"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <button style="padding:4px 8px; border:none; border-radius:8px; background:var(--card-bg); color:var(--foreground); font-size:11px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:4px; box-shadow:0 1px 3px rgba(0,0,0,0.2)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          Tags
+        </button>
+        <div style="position:relative; flex-shrink:0">
+          <select style="appearance:none; padding:4px 22px 4px 8px; font-size:11px; font-weight:500; background:var(--card-bg); border:none; border-radius:8px; color:var(--foreground); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2)">
+            <option>All Dates</option>
+            <option>This Month</option>
+            <option>Last Month</option>
+            <option>This Quarter</option>
+            <option>Last Quarter</option>
+            <option>Year to Date</option>
+            <option>Last 6 Months</option>
+            <option>Last 12 Months</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); pointer-events:none"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000023</span>
+            <span style="font-size:13px; font-weight:500">Website Redesign Phase 2</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Riverside Architecture</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#f87171">Overdue</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$2,500.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 15, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000024</span>
+            <span style="font-size:13px; font-weight:500">Brand Identity Package</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Bloom Creative Studio</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#f59e0b">Sent</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$1,200.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Mar 12, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000025</span>
+            <span style="font-size:13px; font-weight:500">UI/UX Consultation</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Neon Digital Agency</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#f59e0b">Sent</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$550.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Mar 20, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000026</span>
+            <span style="font-size:13px; font-weight:500">Photography Session</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Bloom Creative Studio</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#4ade80">Paid</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$3,200.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 28, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000026</span>
+            <span style="font-size:13px; font-weight:500">Electrical rough-in</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Martinez Electric LLC</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#f59e0b">Sent</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$1,750.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Mar 15, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000027</span>
+            <span style="font-size:13px; font-weight:500">Social Media Assets Q2</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Neon Digital Agency</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#4ade80">Draft</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$4,500.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Mar 10, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000028</span>
+            <span style="font-size:13px; font-weight:500">Website Redesign Phase 1</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Riverside Architecture</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#4ade80">Paid</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$3,800.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Jan 15, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000029</span>
+            <span style="font-size:13px; font-weight:500">Interior Photography Set</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Greenleaf Studio</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#4ade80">Paid</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$1,950.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 1, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:3px; height:40px; border-radius:4px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:9px; font-family:monospace; color:var(--muted)">#000029</span>
+            <span style="font-size:13px; font-weight:500">SEO Audit Report</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; font-weight:500; color:var(--muted)">Neon Digital Agency</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:#4ade80">Paid</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">$750.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 18, 2026</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- RECEIPTS VIEW -->
+<div id="view-receipts" class="app" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">A</div>
+      <span class="sidebar-title" style="cursor:default">Acme Studio</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" onclick="showView('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients & Leads
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Proposals
+      </a>
+      <a class="nav-item" onclick="showView('billing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Billing
+      </a>
+      <a class="nav-item active" onclick="showView('receipts')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></svg>
+        Receipts
+      </a>
+      <a class="nav-item" onclick="showView('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-label">Forward to</div>
+      <a class="sidebar-footer-email" href="mailto:acme-studio@billconductor.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        acme-studio@billconductor.com
+      </a>
+      <button class="sidebar-footer-signout" onclick="showView('login')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="header">
+      <div>
+        <h1>Receipts</h1>
+        <div class="header-sub">9 receipts</div>
+      </div>
+      <div class="header-actions">
+        <div class="search-box">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <input type="text" placeholder="Search invoices, receipts…" />
+        </div>
+        <button class="btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add Receipt
+        </button>
+        <button class="icon-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          <div class="notif-dot"></div>
+        </button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Review CTA -->
+      <button class="btn-chrome" onclick="showView('review')" style="width:100%; padding:14px 16px; margin-bottom:8px; text-align:left; display:flex; align-items:center; gap:12px; border:none; color:white; font-size:14px; font-weight:600; border-radius:12px">
+        <div style="width:36px; height:36px; border-radius:50%; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div style="flex:1">
+          <div>2 receipts need review</div>
+          <div style="font-size:11px; font-weight:400; opacity:0.8">$187.42 pending verification</div>
+        </div>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+
+      <!-- Add Receipts section -->
+      <div class="paper-card" style="padding:12px 14px; margin-bottom:8px">
+        <div style="font-size:10px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px">Add Receipts</div>
+        <div style="display:flex; gap:12px">
+          <div style="flex:1; display:flex; align-items:center; gap:10px; cursor:pointer">
+            <div style="width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:500">Share from Photos</div>
+              <div style="font-size:10px; color:var(--muted)">Tap Share → Bill Conductor</div>
+            </div>
+          </div>
+          <div style="flex:1; display:flex; align-items:center; gap:10px; cursor:pointer">
+            <div style="width:32px; height:32px; border-radius:50%; background:rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:center; flex-shrink:0">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            </div>
+            <div>
+              <div style="font-size:12px; font-weight:500">Forward Email</div>
+              <div style="font-size:10px; color:var(--muted)">acme-studio@billconductor.com</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary strip -->
+      <div style="display:flex; gap:8px; margin-bottom:8px">
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">Total</span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#ef4444; margin:0">$695</p>
+        </div>
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">Pending</span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#f59e0b; margin:0">$187</p>
+        </div>
+        <div class="paper-card" style="flex:1; min-width:0; padding:8px 12px">
+          <span style="font-size:8px; color:var(--muted); text-transform:uppercase; letter-spacing:0.05em">Verified</span>
+          <p class="font-display tabular-nums" style="font-size:14px; font-weight:700; color:#4ade80; margin:0">$507</p>
+        </div>
+      </div>
+
+      <!-- Filters BELOW totals -->
+      <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px; overflow-x:auto">
+        <div style="position:relative; flex-shrink:0">
+          <select style="appearance:none; padding:4px 22px 4px 8px; font-size:11px; font-weight:500; background:var(--card-bg); border:none; border-radius:8px; color:var(--foreground); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2)">
+            <option>All · Newest</option>
+            <option>All · Oldest</option>
+            <option>Pending Only</option>
+            <option>Verified Only</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); pointer-events:none"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div style="position:relative; flex-shrink:0">
+          <select style="appearance:none; padding:4px 22px 4px 8px; font-size:11px; font-weight:500; background:var(--card-bg); border:none; border-radius:8px; color:var(--foreground); cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.2)">
+            <option>All Dates</option>
+            <option>This Month</option>
+            <option>Last Month</option>
+            <option>This Quarter</option>
+            <option>Last Quarter</option>
+            <option>Year to Date</option>
+            <option>Last 6 Months</option>
+            <option>Last 12 Months</option>
+          </select>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); pointer-events:none"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Home Depot</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Materials</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#f59e0b">Pending</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Photo</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$127.43</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Mar 3, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Adobe Creative Cloud</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Software</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#f59e0b">Pending</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Email</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$59.99</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Mar 1, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Staples</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Office Supplies</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#4ade80">Verified</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Photo</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$47.50</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 28, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Delta Airlines</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Travel</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#4ade80">Verified</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Email</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$342.00</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 25, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">FedEx</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Shipping</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#4ade80">Verified</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Email</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$24.95</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 22, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Uber</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Travel</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#4ade80">Verified</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via App</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$34.50</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 20, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Office Depot</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Office Supplies</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#4ade80">Verified</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Photo</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$89.25</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 15, 2026</p>
+        </div>
+      </div>
+
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.08); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Zoom</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Software</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#4ade80">Verified</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Email</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#f87171; margin:0">-$14.99</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Mar 1, 2026</p>
+        </div>
+      </div>
+
+      <!-- Return: Amazon -->
+      <div class="paper-card" style="padding:8px 12px; margin-bottom:6px; cursor:pointer; display:flex; align-items:center; gap:10px">
+        <div style="width:10px; height:24px; border-radius:3px; background:rgba(255,255,255,0.10); flex-shrink:0"></div>
+        <div style="flex:1; min-width:0">
+          <div style="display:flex; align-items:center; gap:6px">
+            <span style="font-size:13px; font-weight:500">Amazon — Return</span>
+            <span style="font-size:9px; padding:1px 6px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">Materials</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:4px; margin-top:2px">
+            <span style="font-size:10px; color:#4ade80">Verified</span>
+            <span style="font-size:10px; color:var(--muted)">·</span>
+            <span style="font-size:10px; color:var(--muted)">via Email</span>
+          </div>
+        </div>
+        <div style="text-align:right; flex-shrink:0">
+          <p class="font-display tabular-nums" style="font-size:13px; font-weight:600; color:#4ade80; margin:0">+$45.99</p>
+          <p style="font-size:9px; color:var(--muted); margin:0">Feb 12, 2026</p>
+        </div>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- RECEIPT REVIEW VIEW -->
+<div id="view-review" style="display:none; background:var(--background); height:100vh; flex-direction:column; overflow:hidden">
+  <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 12px; border-bottom:1px solid var(--border); background:var(--card-bg); flex-shrink:0; box-shadow:0 2px 8px rgba(0,0,0,0.2)">
+    <a onclick="showView('receipts')" style="display:flex; align-items:center; gap:4px; font-size:12px; color:var(--muted); cursor:pointer; text-decoration:none">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      Back
+    </a>
+    <span style="font-size:12px; font-weight:500; font-family:'Space Grotesk','Inter',sans-serif">1/2</span>
+    <span style="font-size:10px; color:var(--muted)">2 left</span>
+  </div>
+
+  <div style="flex-shrink:0">
+    <div style="height:3px; background:var(--border)">
+      <div style="height:100%; width:25%; background:var(--bc-primary); transition:width 0.5s"></div>
+    </div>
+    <div style="display:flex; align-items:center; justify-content:center; gap:12px; padding:6px 0">
+      <div style="display:flex; align-items:center; gap:4px; color:var(--bc-primary)">
+        <div style="width:16px;height:16px;border-radius:50%;background:var(--bc-primary);color:white;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">1</div>
+        <span style="font-size:10px; font-weight:500">Verify</span>
+      </div>
+      <div style="width:20px; height:1px; background:var(--border)"></div>
+      <div style="display:flex; align-items:center; gap:4px; color:var(--muted)">
+        <div style="width:16px;height:16px;border-radius:50%;background:var(--border);color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700">2</div>
+        <span style="font-size:10px; font-weight:500">Tag</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Card area with tab toggle below -->
+  <div style="flex:1; min-height:0; display:flex; flex-direction:column; padding:8px 12px">
+
+    <!-- Scrollable content -->
+    <div style="flex:1; min-height:0; overflow-y:auto">
+      <div id="review-tab-receipt" style="display:block">
+        <div class="paper-card" style="overflow:hidden">
+          <div style="padding:8px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:8px">
+            <div style="width:20px;height:20px;border-radius:4px;background:#fef3c7;color:#d97706;display:flex;align-items:center;justify-content:center">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            </div>
+            <span style="font-size:11px; font-weight:500">Home Depot</span>
+            <span style="font-size:9px; color:var(--muted); margin-left:auto">camera</span>
+          </div>
+          <div style="padding:16px; background:white; color:black">
+            <div style="font-family:monospace; font-size:12px; line-height:1.8; max-width:360px; margin:0 auto">
+              <div style="text-align:center; margin-bottom:12px">
+                <p style="font-weight:700; font-size:14px; color:#94a3b8">HOME DEPOT #4821</p>
+                <p style="color:#94a3b8; font-size:10px">123 Commerce Way · Store #4821</p>
+                <p style="color:#94a3b8; font-size:10px">Mar 3, 2026</p>
+              </div>
+              <div style="border-top:1px dashed #e2e8f0; margin:8px 0"></div>
+              <div style="display:flex; justify-content:space-between; padding:6px 8px">
+                <span style="color:#64748b; font-size:11px">Vendor</span>
+                <span style="font-weight:500; font-size:11px; color:#94a3b8">HOME DEPOT #4821</span>
+              </div>
+              <!-- Amount highlighted with dashed amber border -->
+              <div style="display:flex; justify-content:space-between; padding:6px 8px; border:1.5px dashed #d97706; border-radius:6px; margin:4px 0; background:rgba(217,119,6,0.04)">
+                <span style="color:#64748b; font-size:11px">Amount</span>
+                <span style="font-weight:500; font-size:11px; color:#94a3b8">$127.43</span>
+              </div>
+              <!-- Date highlighted with dashed amber border -->
+              <div style="display:flex; justify-content:space-between; padding:6px 8px; border:1.5px dashed #d97706; border-radius:6px; margin:4px 0; background:rgba(217,119,6,0.04)">
+                <span style="color:#64748b; font-size:11px">Date</span>
+                <span style="font-weight:500; font-size:11px; color:#d97706">03/03/2026</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:6px 8px">
+                <span style="color:#64748b; font-size:11px">Tax</span>
+                <span style="font-weight:500; font-size:11px; color:#94a3b8">$10.21</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:6px 8px">
+                <span style="color:#64748b; font-size:11px">Payment</span>
+                <span style="font-weight:500; font-size:11px; color:#94a3b8">VISA ****6411</span>
+              </div>
+              <div style="border-top:1px dashed #e2e8f0; margin:8px 0"></div>
+              <div style="display:flex; justify-content:space-between; font-weight:700; font-size:14px">
+                <span style="color:#d97706">TOTAL</span>
+                <span style="color:#94a3b8">$127.43</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div id="review-tab-verified" style="display:none">
+        <div class="paper-card" style="overflow:hidden">
+          <div style="padding:8px 12px; border-bottom:1px solid var(--border); display:flex; align-items:center; gap:6px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--bc-primary)" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
+            <span style="font-size:11px; font-weight:500">Verified Fields</span>
+            <span style="font-size:9px; color:var(--muted)">· tap to edit</span>
+          </div>
+
+          <!-- VENDOR -->
+          <div style="padding:12px; border-bottom:1px solid var(--border)">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#16a34a;flex-shrink:0"></div>
+              <span style="font-size:9px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:500">Vendor</span>
+              <span style="font-size:9px; color:var(--muted); margin-left:auto; font-family:monospace">OCR</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:16px; font-weight:500">Home Depot</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="cursor:pointer; opacity:0.5"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </div>
+              <span style="font-size:11px; font-family:monospace; color:var(--muted)">HOME DEPOT #4821</span>
+            </div>
+          </div>
+
+          <!-- AMOUNT -->
+          <div style="padding:12px; border-bottom:1px solid var(--border)">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#16a34a;flex-shrink:0"></div>
+              <span style="font-size:9px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:500">Amount</span>
+              <span style="font-size:9px; color:var(--muted); margin-left:auto; font-family:monospace">OCR</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:16px; font-weight:500">$127.43</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="cursor:pointer; opacity:0.5"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </div>
+              <span style="font-size:11px; font-family:monospace; color:var(--muted)">$127.43</span>
+            </div>
+          </div>
+
+          <!-- DATE -->
+          <div style="padding:12px; border-bottom:1px solid var(--border)">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0"></div>
+              <span style="font-size:9px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:500">Date</span>
+              <span style="font-size:8px; padding:1px 6px; border-radius:99px; background:rgba(245,158,11,0.15); color:#f59e0b; font-weight:500">check</span>
+              <span style="font-size:9px; color:var(--muted); margin-left:auto; font-family:monospace">OCR</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:16px; font-weight:500">Mar 3, 2026</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="cursor:pointer; opacity:0.5"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </div>
+              <span style="font-size:11px; font-family:monospace; color:#d97706">03/03/2026</span>
+            </div>
+          </div>
+
+          <!-- TAX -->
+          <div style="padding:12px; border-bottom:1px solid var(--border)">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#d97706;flex-shrink:0"></div>
+              <span style="font-size:9px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:500">Tax</span>
+              <span style="font-size:8px; padding:1px 6px; border-radius:99px; background:rgba(245,158,11,0.15); color:#f59e0b; font-weight:500">check</span>
+              <span style="font-size:9px; color:var(--muted); margin-left:auto; font-family:monospace">OCR</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:16px; font-weight:500">$10.21</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="cursor:pointer; opacity:0.5"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </div>
+              <span style="font-size:11px; font-family:monospace; color:var(--muted)">$10.21</span>
+            </div>
+          </div>
+
+          <!-- PAYMENT -->
+          <div style="padding:12px; border-bottom:1px solid var(--border)">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px">
+              <div style="width:8px;height:8px;border-radius:50%;background:#16a34a;flex-shrink:0"></div>
+              <span style="font-size:9px; text-transform:uppercase; letter-spacing:0.05em; color:var(--muted); font-weight:500">Payment</span>
+              <span style="font-size:9px; color:var(--muted); margin-left:auto; font-family:monospace">OCR</span>
+            </div>
+            <div style="display:flex; align-items:center; justify-content:space-between">
+              <div style="display:flex; align-items:center; gap:6px">
+                <span style="font-size:16px; font-weight:500">Visa ****6411</span>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2" style="cursor:pointer; opacity:0.5"><path d="M17 3a2.83 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+              </div>
+              <span style="font-size:11px; font-family:monospace; color:var(--muted)">VISA ****6411</span>
+            </div>
+          </div>
+
+          <!-- Confidence footer -->
+          <div style="padding:10px 12px">
+            <div style="display:flex; align-items:center; gap:8px">
+              <div style="display:flex; align-items:center; gap:3px">
+                <div style="width:6px;height:6px;border-radius:50%;background:#16a34a"></div>
+                <span style="font-size:9px; color:#16a34a">High</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:3px">
+                <div style="width:6px;height:6px;border-radius:50%;background:#4ade80"></div>
+                <span style="font-size:9px; color:#4ade80">Good</span>
+              </div>
+              <div style="display:flex; align-items:center; gap:3px">
+                <div style="width:6px;height:6px;border-radius:50%;background:#d97706"></div>
+                <span style="font-size:9px; color:#d97706">Low</span>
+              </div>
+              <span style="font-size:9px; color:var(--muted); margin-left:auto">92% overall</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab toggle BELOW content -->
+      <div style="margin-top:8px">
+        <div id="review-tab-bar" style="display:flex; background:var(--card-bg); border-radius:12px; padding:3px; box-shadow:0 1px 2px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2)">
+          <button onclick="switchReviewTab('receipt')" id="tab-receipt" style="flex:1; display:flex; align-items:center; justify-content:center; gap:5px; padding:10px; border-radius:10px; font-size:12px; font-weight:500; border:none; cursor:pointer; transition:all 0.2s; background:var(--card-bg-elevated); color:var(--foreground); box-shadow:0 1px 3px rgba(0,0,0,0.2)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+            Receipt
+          </button>
+          <button onclick="switchReviewTab('verified')" id="tab-verified" style="flex:1; display:flex; align-items:center; justify-content:center; gap:5px; padding:10px; border-radius:10px; font-size:12px; font-weight:500; border:none; cursor:pointer; transition:all 0.2s; background:transparent; color:var(--muted)">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/><path d="m9 14 2 2 4-4"/></svg>
+            Verified
+            <span id="verified-dot" style="width:6px; height:6px; border-radius:50%; background:var(--bc-primary)"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Confirm button pinned at bottom -->
+    <div style="flex-shrink:0; padding:8px 12px 80px">
+      <button id="review-confirm-btn" disabled onclick="showView('receipts')" class="btn-chrome" style="width:100%; padding:12px; border-radius:12px; font-size:13px; font-weight:500; cursor:not-allowed; display:flex; align-items:center; justify-content:center; gap:6px; opacity:0.35; transition:opacity 0.2s">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+        <span id="review-confirm-text">Review Verified to continue</span>
+      </button>
+      <p id="review-nudge-hint" style="text-align:center; font-size:10px; color:var(--muted); margin:6px 0 0; display:flex; align-items:center; justify-content:center; gap:4px">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+        Tap <strong style="color:var(--bc-primary)">Verified</strong> to review extracted data before confirming
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS VIEW -->
+<div id="view-settings" class="app" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">A</div>
+      <span class="sidebar-title" style="cursor:default">Acme Studio</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" onclick="showView('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients & Leads
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Proposals
+      </a>
+      <a class="nav-item" onclick="showView('billing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Billing
+      </a>
+      <a class="nav-item" onclick="showView('receipts')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></svg>
+        Receipts
+      </a>
+      <a class="nav-item active" onclick="showView('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-label">Forward to</div>
+      <a class="sidebar-footer-email" href="mailto:acme-studio@billconductor.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        acme-studio@billconductor.com
+      </a>
+      <button class="sidebar-footer-signout" onclick="showView('login')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="header">
+      <div>
+        <h1>Settings</h1>
+        <div class="header-sub">Account & preferences</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Email forwarding chrome card -->
+      <div class="chrome-card" style="margin-bottom:8px">
+        <div class="chrome-card-inner" style="padding:12px">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px">
+            <div style="width:3px; height:40px; border-radius:2px; background:var(--bc-primary)"></div>
+            <div>
+              <div style="display:flex; align-items:center; gap:6px">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--bc-primary)" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                <span style="font-size:13px; font-weight:600; font-family:'Space Grotesk','Inter',sans-serif">Email Forwarding</span>
+              </div>
+              <p style="font-size:10px; color:var(--muted); margin:2px 0 0">Forward invoices & receipts to auto-import them</p>
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; background:var(--background); border-radius:8px; padding:8px 12px">
+            <span style="font-size:13px; font-weight:500; font-family:'Space Grotesk','Inter',sans-serif; flex:1">acme-studio@billconductor.com</span>
+            <button style="padding:4px 8px; border-radius:6px; background:var(--bc-primary); color:white; border:none; font-size:10px; font-weight:500; cursor:pointer">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Settings buttons - paper cards -->
+      <div style="display:flex; flex-direction:column; gap:6px">
+        <button class="settings-button">
+          <div class="settings-button-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div class="settings-button-content">
+            <div class="settings-button-title">Account & Security</div>
+            <div class="settings-button-desc">Profile, password, 2FA</div>
+          </div>
+          <svg class="settings-button-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button class="settings-button">
+          <div class="settings-button-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          </div>
+          <div class="settings-button-content">
+            <div class="settings-button-title">Branding & White Label</div>
+            <div class="settings-button-desc">Logo, colors, custom domain</div>
+          </div>
+          <svg class="settings-button-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button class="settings-button" onclick="showView('tags')">
+          <div class="settings-button-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          </div>
+          <div class="settings-button-content">
+            <div class="settings-button-title">Tags & Categories</div>
+            <div class="settings-button-desc">Manage tag groups and labels</div>
+          </div>
+          <svg class="settings-button-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <button class="settings-button">
+          <div class="settings-button-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          </div>
+          <div class="settings-button-content">
+            <div class="settings-button-title">Notifications</div>
+            <div class="settings-button-desc">Email alerts, reminders, digests</div>
+          </div>
+          <svg class="settings-button-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+
+        <!-- Sign Out -->
+        <button class="settings-button" onclick="showView('login')">
+          <div class="settings-button-icon">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          </div>
+          <div class="settings-button-content">
+            <div class="settings-button-title">Sign Out</div>
+            <div class="settings-button-desc">Log out of your account</div>
+          </div>
+          <svg class="settings-button-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAGS & CATEGORIES VIEW -->
+<div id="view-tags" class="app" style="display:none">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-logo">A</div>
+      <span class="sidebar-title" style="cursor:default">Acme Studio</span>
+    </div>
+    <nav class="sidebar-nav">
+      <a class="nav-item" onclick="showView('home')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Home
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        Clients & Leads
+      </a>
+      <a class="nav-item">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Proposals
+      </a>
+      <a class="nav-item" onclick="showView('billing')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="12" y1="18" x2="12" y2="12"/><line x1="9" y1="15" x2="15" y2="15"/></svg>
+        Billing
+      </a>
+      <a class="nav-item" onclick="showView('receipts')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></svg>
+        Receipts
+      </a>
+      <a class="nav-item active" onclick="showView('settings')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Settings
+      </a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-label">Forward to</div>
+      <a class="sidebar-footer-email" href="mailto:acme-studio@billconductor.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        acme-studio@billconductor.com
+      </a>
+      <button class="sidebar-footer-signout" onclick="showView('login')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Sign Out
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="header">
+      <div>
+        <h1>Tags & Categories</h1>
+        <div class="header-sub">Organize your finances</div>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Expense Type Category -->
+      <div class="paper-card" style="margin-bottom:12px; overflow:hidden">
+        <div style="padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer" onclick="this.parentElement.nextElementSibling.style.display = this.parentElement.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+          <div style="display:flex; align-items:center; gap:8px">
+            <span style="font-size:13px; font-weight:600">Expense Type</span>
+            <span style="font-size:9px; padding:2px 8px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">6 tags</span>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div style="padding:8px 12px; background:var(--background); display:block">
+          <div style="display:flex; flex-wrap:wrap; gap:6px">
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Materials</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Software</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Travel</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Office Supplies</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Shipping</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Subcontractor</span>
+          </div>
+          <button style="margin-top:8px; padding:4px 8px; border-radius:8px; background:var(--card-bg); border:none; color:var(--bc-primary); font-size:10px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:4px">
+            <span>+ Add Tag</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Project Category -->
+      <div class="paper-card" style="margin-bottom:12px; overflow:hidden">
+        <div style="padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer" onclick="this.parentElement.nextElementSibling.style.display = this.parentElement.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+          <div style="display:flex; align-items:center; gap:8px">
+            <span style="font-size:13px; font-weight:600">Project</span>
+            <span style="font-size:9px; padding:2px 8px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">3 tags</span>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div style="padding:8px 12px; background:var(--background); display:block">
+          <div style="display:flex; flex-wrap:wrap; gap:6px">
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Riverside Redesign</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Bloom Identity</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Neon Social Q2</span>
+          </div>
+          <button style="margin-top:8px; padding:4px 8px; border-radius:8px; background:var(--card-bg); border:none; color:var(--bc-primary); font-size:10px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:4px">
+            <span>+ Add Tag</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tax Category -->
+      <div class="paper-card" style="margin-bottom:12px; overflow:hidden">
+        <div style="padding:12px 14px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; cursor:pointer" onclick="this.parentElement.nextElementSibling.style.display = this.parentElement.nextElementSibling.style.display === 'none' ? 'block' : 'none'">
+          <div style="display:flex; align-items:center; gap:8px">
+            <span style="font-size:13px; font-weight:600">Tax</span>
+            <span style="font-size:9px; padding:2px 8px; border-radius:99px; background:rgba(255,255,255,0.06); color:var(--muted)">3 tags</span>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+        <div style="padding:8px 12px; background:var(--background); display:block">
+          <div style="display:flex; flex-wrap:wrap; gap:6px">
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Deductible</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Non-deductible</span>
+            <span style="padding:4px 8px; border-radius:12px; background:var(--card-bg); font-size:11px; color:var(--foreground)">Mileage</span>
+          </div>
+          <button style="margin-top:8px; padding:4px 8px; border-radius:8px; background:var(--card-bg); border:none; color:var(--bc-primary); font-size:10px; font-weight:500; cursor:pointer; display:flex; align-items:center; gap:4px">
+            <span>+ Add Tag</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- New Category Button -->
+      <button style="width:100%; padding:12px; border-radius:12px; background:var(--card-bg); border:none; color:var(--bc-primary); font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:6px; box-shadow:0 1px 2px rgba(0,0,0,0.4), 0 4px 8px rgba(0,0,0,0.2)">
+        <span>+ New Category</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LOGIN VIEW -->
+<div id="view-login" style="display:none">
+  <div style="min-height:100vh; display:flex; align-items:center; justify-content:center; background:var(--background); padding:20px">
+    <div style="width:100%; max-width:380px">
+      <div style="text-align:center; margin-bottom:32px">
+        <div class="sidebar-logo" style="width:48px;height:48px;font-size:18px;margin:0 auto 12px">BC</div>
+        <h1 style="font-size:20px; font-weight:700">Welcome back</h1>
+        <p style="font-size:14px; color:var(--muted); margin-top:4px">Sign in to Bill Conductor</p>
+      </div>
+      <div class="paper-card" style="padding:24px">
+        <div style="margin-bottom:16px">
+          <label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px">Email</label>
+          <input type="email" placeholder="you@company.com" style="width:100%; padding:8px 12px; border-radius:8px; border:none; background:var(--background); font-size:14px; outline:none; color:var(--foreground); box-shadow:0 1px 2px rgba(0,0,0,0.4),0 2px 4px rgba(0,0,0,0.2)" />
+        </div>
+        <div style="margin-bottom:20px">
+          <label style="display:block; font-size:13px; font-weight:500; margin-bottom:6px">Password</label>
+          <input type="password" placeholder="Enter your password" style="width:100%; padding:8px 12px; border-radius:8px; border:none; background:var(--background); font-size:14px; outline:none; color:var(--foreground); box-shadow:0 1px 2px rgba(0,0,0,0.4),0 2px 4px rgba(0,0,0,0.2)" />
+        </div>
+        <button class="btn-primary" onclick="showView('home')" style="width:100%; justify-content:center; padding:10px; box-shadow:0 2px 6px rgba(34,139,34,0.25)">Sign In</button>
+      </div>
+      <p style="text-align:center; font-size:13px; color:var(--muted); margin-top:16px">
+        Don't have an account? <a href="#" onclick="showView('home')" style="color:var(--bc-primary); font-weight:500; text-decoration:none">Create one</a>
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  var reviewHasViewedVerified = false;
+  
+  function switchReviewTab(tab) {
+    document.getElementById('review-tab-receipt').style.display = tab === 'receipt' ? 'block' : 'none';
+    document.getElementById('review-tab-verified').style.display = tab === 'verified' ? 'block' : 'none';
+    var tabReceipt = document.getElementById('tab-receipt');
+    var tabVerified = document.getElementById('tab-verified');
+    if (tab === 'receipt') {
+      tabReceipt.style.background = 'var(--card-bg-elevated)';
+      tabReceipt.style.color = 'var(--foreground)';
+      tabReceipt.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+      if (reviewHasViewedVerified) {
+        tabVerified.style.background = 'transparent';
+        tabVerified.style.color = 'var(--muted)';
+        tabVerified.style.boxShadow = 'none';
+      }
+    } else if (tab === 'verified') {
+      reviewHasViewedVerified = true;
+      tabVerified.style.background = 'var(--card-bg-elevated)';
+      tabVerified.style.color = 'var(--foreground)';
+      tabVerified.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+      tabReceipt.style.background = 'transparent';
+      tabReceipt.style.color = 'var(--muted)';
+      tabReceipt.style.boxShadow = 'none';
+      var btn = document.getElementById('review-confirm-btn');
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      btn.style.cursor = 'pointer';
+      document.getElementById('review-confirm-text').textContent = 'Looks Good — Continue';
+      var dot = document.getElementById('verified-dot');
+      if (dot) dot.style.display = 'none';
+      var hint = document.getElementById('review-nudge-hint');
+      if (hint) hint.style.display = 'none';
+    }
+  }
+
+  function showView(name) {
+    document.querySelectorAll('[id^="view-"]').forEach(el => el.style.display = 'none');
+    const view = document.getElementById('view-' + name);
+    if (view) {
+      if (name === 'login') {
+        view.style.display = 'block';
+      } else if (name === 'review') {
+        view.style.display = 'flex';
+        view.style.flexDirection = 'column';
+        // Reset review state every time we enter Review
+        reviewHasViewedVerified = false;
+        var btn = document.getElementById('review-confirm-btn');
+        btn.disabled = true;
+        btn.style.opacity = '0.35';
+        btn.style.cursor = 'not-allowed';
+        document.getElementById('review-confirm-text').textContent = 'Review Verified to continue';
+        // Reset tabs
+        var tabReceipt = document.getElementById('tab-receipt');
+        var tabVerified = document.getElementById('tab-verified');
+        tabReceipt.style.background = 'var(--card-bg-elevated)';
+        tabReceipt.style.color = 'var(--foreground)';
+        tabReceipt.style.boxShadow = '0 1px 3px rgba(0,0,0,0.2)';
+        tabVerified.style.background = 'transparent';
+        tabVerified.style.color = 'var(--muted)';
+        tabVerified.style.boxShadow = 'none';
+        // Show nudge dot on Verified tab
+        var dot = document.getElementById('verified-dot');
+        if (dot) dot.style.display = '';
+        // Show nudge hint
+        var hint = document.getElementById('review-nudge-hint');
+        if (hint) hint.style.display = '';
+        // Show receipt tab content
+        document.getElementById('review-tab-receipt').style.display = 'block';
+        document.getElementById('review-tab-verified').style.display = 'none';
+      } else {
+        view.style.display = 'flex';
+      }
+    }
+    document.querySelectorAll('.view-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === name);
+    });
+  }
+</script>
+
+</body>
+</html>
